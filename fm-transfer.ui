@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>530</width>
-    <height>630</height>
+    <width>573</width>
+    <height>731</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -45,146 +45,440 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="centralGridLayout">
-    <item row="4" column="8">
-     <widget class="QPushButton" name="sendFileButton">
-      <property name="text">
-       <string>Send file</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="2" colspan="6">
-     <widget class="QLineEdit" name="sendFileLineEdit">
-      <property name="acceptDrops">
-       <bool>false</bool>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QPushButton" name="chooseSendFileButton">
-      <property name="text">
-       <string>Choose send file</string>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="0">
-     <widget class="QGroupBox" name="pttGroupBox">
+     <layout class="QHBoxLayout" name="qhBoxHorizontalLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
+      </property>
+      <item>
+       <widget class="QGroupBox" name="pttGroupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>130</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>PTT</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QRadioButton" name="pttReleasedRadioButton">
+           <property name="text">
+            <string>Unpressed</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="pttPressedRadioButton">
+           <property name="text">
+            <string>Pressed</string>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="toolGroupBox">
+        <property name="maximumSize">
+         <size>
+          <width>130</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Tool</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QRadioButton" name="ggRadioButton">
+           <property name="text">
+            <string>gg-transfer</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="quietRadioButton">
+           <property name="text">
+            <string>quiet-lib</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="protocolGroupBox">
+        <property name="maximumSize">
+         <size>
+          <width>180</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Send protocol</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QComboBox" name="ggProtocolComboBox">
+           <property name="currentIndex">
+            <number>2</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>Normal</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Fast</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Fastest</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>[U] Normal</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>[U] Fast</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>[U] Fastest</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>[DT] Normal</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>[DT] Fast</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>[DT] Fastest</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="quietProtocolComboBox">
+           <item>
+            <property name="text">
+             <string>audible</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>audible-7k-channel-0</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>audible-7k-channel-1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>cable-64k</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ultrasonic</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ultrasonic-3600</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>ultrasonic-whisper</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="signalGroupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>130</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>130</width>
+          <height>100</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Signal</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QRadioButton" name="dsrRadioButton">
+           <property name="text">
+            <string>DTR</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rtsRadioButton">
+           <property name="text">
+            <string>RTS</string>
+           </property>
+           <property name="autoExclusive">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPlainTextEdit" name="messages">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
+      <property name="acceptDrops">
+       <bool>false</bool>
       </property>
-      <property name="maximumSize">
-       <size>
-        <width>130</width>
-        <height>100</height>
-       </size>
+      <property name="undoRedoEnabled">
+       <bool>false</bool>
       </property>
-      <property name="title">
-       <string>PTT</string>
+      <property name="lineWrapMode">
+       <enum>QPlainTextEdit::LineWrapMode::NoWrap</enum>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QRadioButton" name="pttReleasedRadioButton">
-         <property name="text">
-          <string>Unpressed</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="pttPressedRadioButton">
-         <property name="text">
-          <string>Pressed</string>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+      <property name="centerOnScroll">
+       <bool>false</bool>
+      </property>
      </widget>
     </item>
-    <item row="0" column="4">
-     <widget class="QGroupBox" name="protocolGroupBox">
-      <property name="maximumSize">
-       <size>
-        <width>180</width>
-        <height>100</height>
-       </size>
-      </property>
-      <property name="title">
-       <string>Send protocol</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QComboBox" name="protocolComboBox">
-         <item>
-          <property name="text">
-           <string>Normal</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Fast</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Fastest</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>[U] Normal</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>[U] Fast</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>[U] Fastest</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>[DT] Normal</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>[DT] Fast</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>[DT] Fastest</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-      </layout>
-     </widget>
+    <item row="2" column="0">
+     <layout class="QHBoxLayout" name="signalLedHorizontalLayout">
+      <item>
+       <widget class="QPushButton" name="checkSignalButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>98</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Check signal</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Led" name="led">
+        <property name="On">
+         <bool>false</bool>
+        </property>
+        <property name="LightColor">
+         <color>
+          <red>255</red>
+          <green>0</green>
+          <blue>0</blue>
+         </color>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="serialComboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton">
+        <property name="text">
+         <string>Recheck Serial Ports</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
-    <item row="7" column="0" colspan="9">
-     <layout class="QHBoxLayout" name="horizontalLayout">
+    <item row="3" column="0">
+     <layout class="QHBoxLayout" name="sendFilehorizontalLayout">
+      <item>
+       <widget class="QPushButton" name="chooseSendFileButton">
+        <property name="minimumSize">
+         <size>
+          <width>98</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Choose send file</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="sendFileLineEdit">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="acceptDrops">
+         <bool>false</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="sendFileButton">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Send file</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="4" column="0">
+     <layout class="QHBoxLayout" name="receiveHorizontalLayout">
+      <item>
+       <widget class="QPushButton" name="chooseRecvFileButton">
+        <property name="minimumSize">
+         <size>
+          <width>98</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Choose recv file</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="receiveFileLineEdit">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="acceptDrops">
+         <bool>false</bool>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="receiveButton">
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Receive file</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="5" column="0">
+     <widget class="QProgressBar" name="progressBar"/>
+    </item>
+    <item row="6" column="0">
+     <layout class="QHBoxLayout" name="msgHorizontalLayout">
       <item>
        <widget class="QPushButton" name="recvMsgButton">
         <property name="text">
@@ -214,167 +508,6 @@
       </item>
      </layout>
     </item>
-    <item row="3" column="0">
-     <widget class="QPushButton" name="checkSignalButton">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="text">
-       <string>Check signal</string>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0" colspan="9">
-     <widget class="QProgressBar" name="progressBar"/>
-    </item>
-    <item row="5" column="2" colspan="6">
-     <widget class="QLineEdit" name="receiveFileLineEdit">
-      <property name="acceptDrops">
-       <bool>false</bool>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0" colspan="9">
-     <widget class="QPlainTextEdit" name="messages">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="acceptDrops">
-       <bool>false</bool>
-      </property>
-      <property name="undoRedoEnabled">
-       <bool>false</bool>
-      </property>
-      <property name="lineWrapMode">
-       <enum>QPlainTextEdit::LineWrapMode::NoWrap</enum>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-      <property name="centerOnScroll">
-       <bool>false</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="4">
-     <widget class="QComboBox" name="serialComboBox"/>
-    </item>
-    <item row="5" column="0">
-     <widget class="QPushButton" name="chooseRecvFileButton">
-      <property name="text">
-       <string>Choose output file</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="8">
-     <widget class="QPushButton" name="receiveButton">
-      <property name="text">
-       <string>Receive file</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="7">
-     <spacer name="horizontalSpacer2">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Policy::Expanding</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="0" column="8">
-     <widget class="QGroupBox" name="signalGroupBox">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>130</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>130</width>
-        <height>100</height>
-       </size>
-      </property>
-      <property name="title">
-       <string>Signal</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="QRadioButton" name="dsrRadioButton">
-         <property name="text">
-          <string>DTR</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="rtsRadioButton">
-         <property name="text">
-          <string>RTS</string>
-         </property>
-         <property name="autoExclusive">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item row="0" column="2">
-     <spacer name="horizontalSpacer1">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>40</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item row="3" column="2">
-     <widget class="Led" name="led">
-      <property name="On">
-       <bool>false</bool>
-      </property>
-      <property name="LightColor">
-       <color>
-        <red>255</red>
-        <green>0</green>
-        <blue>0</blue>
-       </color>
-      </property>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -382,7 +515,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>530</width>
+     <width>573</width>
      <height>22</height>
     </rect>
    </property>
@@ -402,24 +535,30 @@
    <header>led.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>pttReleasedRadioButton</tabstop>
+  <tabstop>pttPressedRadioButton</tabstop>
+  <tabstop>ggRadioButton</tabstop>
+  <tabstop>quietRadioButton</tabstop>
+  <tabstop>ggProtocolComboBox</tabstop>
+  <tabstop>quietProtocolComboBox</tabstop>
+  <tabstop>dsrRadioButton</tabstop>
+  <tabstop>rtsRadioButton</tabstop>
+  <tabstop>messages</tabstop>
+  <tabstop>checkSignalButton</tabstop>
+  <tabstop>serialComboBox</tabstop>
+  <tabstop>chooseSendFileButton</tabstop>
+  <tabstop>sendFileLineEdit</tabstop>
+  <tabstop>sendFileButton</tabstop>
+  <tabstop>chooseRecvFileButton</tabstop>
+  <tabstop>receiveFileLineEdit</tabstop>
+  <tabstop>receiveButton</tabstop>
+  <tabstop>recvMsgButton</tabstop>
+  <tabstop>shortMsg</tabstop>
+  <tabstop>sendMsgButton</tabstop>
+ </tabstops>
  <resources/>
  <connections>
-  <connection>
-   <sender>pttReleasedRadioButton</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>FmTransfer</receiver>
-   <slot>toggle_ptt(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>104</x>
-     <y>82</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>138</x>
-     <y>37</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>checkSignalButton</sender>
    <signal>clicked()</signal>
@@ -427,8 +566,8 @@
    <slot>check_signal()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>83</x>
-     <y>477</y>
+     <x>93</x>
+     <y>573</y>
     </hint>
     <hint type="destinationlabel">
      <x>394</x>
@@ -443,8 +582,8 @@
    <slot>toggle_signal(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>510</x>
-     <y>82</y>
+     <x>552</x>
+     <y>158</y>
     </hint>
     <hint type="destinationlabel">
      <x>293</x>
@@ -459,8 +598,8 @@
    <slot>send_text()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>519</x>
-     <y>596</y>
+     <x>562</x>
+     <y>699</y>
     </hint>
     <hint type="destinationlabel">
      <x>378</x>
@@ -475,8 +614,8 @@
    <slot>receive_file()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>417</x>
-     <y>517</y>
+     <x>562</x>
+     <y>637</y>
     </hint>
     <hint type="destinationlabel">
      <x>160</x>
@@ -491,8 +630,8 @@
    <slot>send_file()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>418</x>
-     <y>488</y>
+     <x>562</x>
+     <y>605</y>
     </hint>
     <hint type="destinationlabel">
      <x>289</x>
@@ -507,8 +646,8 @@
    <slot>choose_send_file()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>96</x>
-     <y>486</y>
+     <x>106</x>
+     <y>605</y>
     </hint>
     <hint type="destinationlabel">
      <x>198</x>
@@ -517,14 +656,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>protocolComboBox</sender>
+   <sender>ggProtocolComboBox</sender>
    <signal>currentIndexChanged(int)</signal>
    <receiver>FmTransfer</receiver>
-   <slot>set_protocol(int)</slot>
+   <slot>set_gg_protocol(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>309</x>
-     <y>99</y>
+     <x>416</x>
+     <y>158</y>
     </hint>
     <hint type="destinationlabel">
      <x>320</x>
@@ -539,8 +678,8 @@
    <slot>choose_recv_file()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>56</x>
-     <y>521</y>
+     <x>66</x>
+     <y>637</y>
     </hint>
     <hint type="destinationlabel">
      <x>239</x>
@@ -555,12 +694,76 @@
    <slot>receive_text()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>56</x>
-     <y>592</y>
+     <x>66</x>
+     <y>699</y>
     </hint>
     <hint type="destinationlabel">
      <x>456</x>
      <y>445</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pttReleasedRadioButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>toggle_ptt(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>124</x>
+     <y>158</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>138</x>
+     <y>37</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ggRadioButton</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>set_tool(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>187</x>
+     <y>150</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>276</x>
+     <y>244</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>quietProtocolComboBox</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>set_quiet_protocol(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>338</x>
+     <y>184</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>243</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>recheck_serial_ports()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>478</x>
+     <y>555</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>42</x>
+     <y>225</y>
     </hint>
    </hints>
   </connection>
@@ -573,9 +776,12 @@
   <slot>send_file()</slot>
   <slot>receive_file()</slot>
   <slot>choose_send_file()</slot>
-  <slot>set_protocol(int)</slot>
+  <slot>set_gg_protocol(int)</slot>
   <slot>choose_recv_file()</slot>
   <slot>reinit_serial(int)</slot>
   <slot>receive_text()</slot>
+  <slot>set_quiet_protocol(int)</slot>
+  <slot>set_tool(bool)</slot>
+  <slot>recheck_serial_ports()</slot>
  </slots>
 </ui>

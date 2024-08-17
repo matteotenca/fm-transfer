@@ -1,5 +1,8 @@
 /fm-transfer.iml
 /venv/
 /.idea/
-/src/fm_transfer.egg-info/
+/**/fm_transfer.egg-info/
 /.dmypy.json
+/dist/
+/build/
+/**/fm-transfer.spec
