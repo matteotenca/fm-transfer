@@ -5,7 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fm-transfer"
 dynamic = ["version"]
-#readme = "README.md"
+readme = "README.md"
+license = {file = "LICENSE"}
 authors = [{name = "Matteo Tenca", email = "matteo.tenca@gmail.com"}]
 description = "Send and receive data via radio transceivers"
 classifiers = [
@@ -20,11 +21,15 @@ classifiers = [
     "Topic :: Communications",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
-urls = {Homepage = "https://github.com/matteotenca/fm-transfer"}
-dependencies = ["pyqt6", "pyserial", "gg-transfer", "quiet-transfer"]
+dependencies = ["pyqt6", "pyserial", "gg-transfer==0.2.6", "quiet-transfer==0.2.6"]
 
 [project.scripts]
 fm-transfer = "fmtransfer.__main__:_main"
+
+[project.urls]
+Repository = "https://github.com/matteotenca/fm-transfer"
+Homepage = "https://github.com/matteotenca/fm-transfer"
+Source = "https://github.com/matteotenca/fm-transfer"
 
 [tool.setuptools]
 include-package-data = false

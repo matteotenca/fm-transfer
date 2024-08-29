@@ -52,6 +52,9 @@ class Ui_FmTransfer(object):
         self.pttPressedRadioButton.setAutoExclusive(True)
         self.pttPressedRadioButton.setObjectName("pttPressedRadioButton")
         self.verticalLayout_3.addWidget(self.pttPressedRadioButton)
+        self.signalLogic = QtWidgets.QCheckBox(parent=self.pttGroupBox)
+        self.signalLogic.setObjectName("signalLogic")
+        self.verticalLayout_3.addWidget(self.signalLogic)
         self.qhBoxHorizontalLayout.addWidget(self.pttGroupBox)
         self.toolGroupBox = QtWidgets.QGroupBox(parent=self.centralwidget)
         self.toolGroupBox.setMaximumSize(QtCore.QSize(130, 100))
@@ -237,6 +240,7 @@ class Ui_FmTransfer(object):
         self.ggRadioButton.toggled['bool'].connect(FmTransfer.set_tool) # type: ignore
         self.quietProtocolComboBox.currentIndexChanged['int'].connect(FmTransfer.set_quiet_protocol) # type: ignore
         self.pushButton.clicked.connect(FmTransfer.recheck_serial_ports) # type: ignore
+        self.signalLogic.clicked['bool'].connect(FmTransfer.set_signal_logic) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(FmTransfer)
         FmTransfer.setTabOrder(self.pttReleasedRadioButton, self.pttPressedRadioButton)
         FmTransfer.setTabOrder(self.pttPressedRadioButton, self.ggRadioButton)
@@ -264,6 +268,7 @@ class Ui_FmTransfer(object):
         self.pttGroupBox.setTitle(_translate("FmTransfer", "PTT"))
         self.pttReleasedRadioButton.setText(_translate("FmTransfer", "Unpressed"))
         self.pttPressedRadioButton.setText(_translate("FmTransfer", "Pressed"))
+        self.signalLogic.setText(_translate("FmTransfer", "Reverse logic"))
         self.toolGroupBox.setTitle(_translate("FmTransfer", "Tool"))
         self.ggRadioButton.setText(_translate("FmTransfer", "gg-transfer"))
         self.quietRadioButton.setText(_translate("FmTransfer", "quiet-lib"))

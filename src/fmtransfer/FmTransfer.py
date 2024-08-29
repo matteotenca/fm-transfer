@@ -24,6 +24,7 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
                                      "ultrasonic-3600", "ultrasonic-whisper"]
         self._quiet_protocol = 0
         self._gg_protocol = 2
+        self._logic = True
         self.setupUi(FmTransfer=self)  # type: ignore[no-untyped-call]
         self._serialdevice: Optional[Serial] = None
         self._serial = ""
@@ -85,6 +86,7 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         settings.setValue("MainWindow/signal", self._signal_dtr)
         settings.setValue("MainWindow/serial", self._serial)
         settings.setValue("MainWindow/serial_index", self._serial_index)
+        settings.setValue("MainWindow/signal_logic", not self._logic)
         super().closeEvent(event)
 
     def _load_settings(self) -> None:
@@ -109,7 +111,7 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
             self.receiveFileLineEdit.setText(short_fname)
 
         self._tool = settings.value("MainWindow/tool", self._tool, bool)
-        self.quietRadioButton.setChecked(not self._tool)
+        self.quietRadioButton.setChecked(self._tool)
         if self._tool:
             self.set_tool(self._tool)
 
@@ -117,6 +119,10 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         self.ggProtocolComboBox.setCurrentIndex(gg_protocol)
         quiet_protocol = settings.value("MainWindow/quiet_protocol", self._quiet_protocol, int)
         self.quietProtocolComboBox.setCurrentIndex(quiet_protocol)
+
+        self._logic = settings.value("MainWindow/signal_logic", self._logic, bool)
+        self.signalLogic.setChecked(self._logic)
+        self.set_signal_logic(self._logic)
 
         signal = settings.value("MainWindow/signal", self._signal_dtr, bool)
         self._signal_dtr = signal
@@ -398,16 +404,16 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         if self._serialdevice and self._serialdevice.is_open:
             # print("ptt", self._ptt_unpressed)
             if self._ptt_unpressed:
-                self._serialdevice.dtr = True
-                self._serialdevice.rts = True
+                self._serialdevice.dtr = self._logic
+                self._serialdevice.rts = self._logic
             else:
                 # print("signal", self._signal_dtr)
                 if self._signal_dtr:
-                    self._serialdevice.dtr = False
-                    self._serialdevice.rts = True
+                    self._serialdevice.dtr = not self._logic
+                    self._serialdevice.rts = self._logic
                 else:
-                    self._serialdevice.dtr = False
-                    self._serialdevice.rts = True
+                    self._serialdevice.dtr = self._logic
+                    self._serialdevice.rts = not self._logic
 
     def check_signal(self) -> None:
         # noinspection PyUnresolvedReferences
@@ -583,3 +589,7 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
                 self._send_filename) > 20 else self._send_filename
             self.sendFileLineEdit.setText(short_fname)
 
+    def set_signal_logic(self, logic: bool) -> None:
+        self._logic = not logic
+        self._send_signal()
+        self.check_signal()

@@ -97,6 +97,13 @@
            </property>
           </widget>
          </item>
+         <item>
+          <widget class="QCheckBox" name="signalLogic">
+           <property name="text">
+            <string>Reverse logic</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -710,8 +717,8 @@
    <slot>toggle_ptt(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>124</x>
-     <y>158</y>
+     <x>129</x>
+     <y>150</y>
     </hint>
     <hint type="destinationlabel">
      <x>138</x>
@@ -767,6 +774,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>signalLogic</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>set_signal_logic(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>47</x>
+     <y>193</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>83</x>
+     <y>49</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>toggle_ptt(bool)</slot>
@@ -783,5 +806,6 @@
   <slot>set_quiet_protocol(int)</slot>
   <slot>set_tool(bool)</slot>
   <slot>recheck_serial_ports()</slot>
+  <slot>set_signal_logic(bool)</slot>
  </slots>
 </ui>
