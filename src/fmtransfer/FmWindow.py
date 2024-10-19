@@ -21,8 +21,6 @@ class Ui_FmTransfer(object):
         FmTransfer.setSizePolicy(sizePolicy)
         FmTransfer.setMinimumSize(QtCore.QSize(530, 630))
         FmTransfer.setMaximumSize(QtCore.QSize(800, 800))
-        icon = QtGui.QIcon.fromTheme("QIcon::ThemeIcon::MediaSeekForward")
-        FmTransfer.setWindowIcon(icon)
         FmTransfer.setAutoFillBackground(False)
         FmTransfer.setDocumentMode(False)
         self.centralwidget = QtWidgets.QWidget(parent=FmTransfer)
@@ -68,6 +66,9 @@ class Ui_FmTransfer(object):
         self.quietRadioButton = QtWidgets.QRadioButton(parent=self.toolGroupBox)
         self.quietRadioButton.setObjectName("quietRadioButton")
         self.verticalLayout_5.addWidget(self.quietRadioButton)
+        self.zlibCheckBox = QtWidgets.QCheckBox(parent=self.toolGroupBox)
+        self.zlibCheckBox.setObjectName("zlibCheckBox")
+        self.verticalLayout_5.addWidget(self.zlibCheckBox)
         self.qhBoxHorizontalLayout.addWidget(self.toolGroupBox)
         self.protocolGroupBox = QtWidgets.QGroupBox(parent=self.centralwidget)
         self.protocolGroupBox.setMaximumSize(QtCore.QSize(180, 100))
@@ -125,11 +126,15 @@ class Ui_FmTransfer(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.messages.sizePolicy().hasHeightForWidth())
         self.messages.setSizePolicy(sizePolicy)
+        self.messages.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.ActionsContextMenu)
         self.messages.setAcceptDrops(False)
+        self.messages.setDocumentTitle("")
         self.messages.setUndoRedoEnabled(False)
         self.messages.setLineWrapMode(QtWidgets.QPlainTextEdit.LineWrapMode.NoWrap)
         self.messages.setReadOnly(True)
+        self.messages.setPlainText("")
         self.messages.setCenterOnScroll(False)
+        self.messages.setPlaceholderText("")
         self.messages.setObjectName("messages")
         self.centralGridLayout.addWidget(self.messages, 1, 0, 1, 1)
         self.signalLedHorizontalLayout = QtWidgets.QHBoxLayout()
@@ -158,9 +163,9 @@ class Ui_FmTransfer(object):
         self.signalLedHorizontalLayout.addWidget(self.serialComboBox)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.signalLedHorizontalLayout.addItem(spacerItem)
-        self.pushButton = QtWidgets.QPushButton(parent=self.centralwidget)
-        self.pushButton.setObjectName("pushButton")
-        self.signalLedHorizontalLayout.addWidget(self.pushButton)
+        self.recheckSerialButton = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.recheckSerialButton.setObjectName("recheckSerialButton")
+        self.signalLedHorizontalLayout.addWidget(self.recheckSerialButton)
         self.centralGridLayout.addLayout(self.signalLedHorizontalLayout, 2, 0, 1, 1)
         self.sendFilehorizontalLayout = QtWidgets.QHBoxLayout()
         self.sendFilehorizontalLayout.setObjectName("sendFilehorizontalLayout")
@@ -223,6 +228,20 @@ class Ui_FmTransfer(object):
         self.statusbar = QtWidgets.QStatusBar(parent=FmTransfer)
         self.statusbar.setObjectName("statusbar")
         FmTransfer.setStatusBar(self.statusbar)
+        self.actionSave_config = QtGui.QAction(parent=FmTransfer)
+        self.actionSave_config.setObjectName("actionSave_config")
+        self.actionLoad_config = QtGui.QAction(parent=FmTransfer)
+        self.actionLoad_config.setObjectName("actionLoad_config")
+        self.actionClear_log = QtGui.QAction(parent=FmTransfer)
+        self.actionClear_log.setObjectName("actionClear_log")
+        self.actionShow_signals_in_log = QtGui.QAction(parent=FmTransfer)
+        self.actionShow_signals_in_log.setCheckable(True)
+        self.actionShow_signals_in_log.setObjectName("actionShow_signals_in_log")
+        self.menuFile.addAction(self.actionSave_config)
+        self.menuFile.addAction(self.actionLoad_config)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionClear_log)
+        self.menuFile.addAction(self.actionShow_signals_in_log)
         self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(FmTransfer)
@@ -239,8 +258,13 @@ class Ui_FmTransfer(object):
         self.pttReleasedRadioButton.toggled['bool'].connect(FmTransfer.toggle_ptt) # type: ignore
         self.ggRadioButton.toggled['bool'].connect(FmTransfer.set_tool) # type: ignore
         self.quietProtocolComboBox.currentIndexChanged['int'].connect(FmTransfer.set_quiet_protocol) # type: ignore
-        self.pushButton.clicked.connect(FmTransfer.recheck_serial_ports) # type: ignore
+        self.recheckSerialButton.clicked.connect(FmTransfer.recheck_serial_ports) # type: ignore
         self.signalLogic.clicked['bool'].connect(FmTransfer.set_signal_logic) # type: ignore
+        self.zlibCheckBox.clicked['bool'].connect(FmTransfer.set_compression) # type: ignore
+        self.actionSave_config.triggered.connect(FmTransfer.save_config) # type: ignore
+        self.actionLoad_config.triggered.connect(FmTransfer.load_config) # type: ignore
+        self.actionClear_log.triggered.connect(FmTransfer.clear_log) # type: ignore
+        self.actionShow_signals_in_log.toggled['bool'].connect(FmTransfer.toggle_signals_in_log) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(FmTransfer)
         FmTransfer.setTabOrder(self.pttReleasedRadioButton, self.pttPressedRadioButton)
         FmTransfer.setTabOrder(self.pttPressedRadioButton, self.ggRadioButton)
@@ -272,6 +296,7 @@ class Ui_FmTransfer(object):
         self.toolGroupBox.setTitle(_translate("FmTransfer", "Tool"))
         self.ggRadioButton.setText(_translate("FmTransfer", "gg-transfer"))
         self.quietRadioButton.setText(_translate("FmTransfer", "quiet-lib"))
+        self.zlibCheckBox.setText(_translate("FmTransfer", "zlib compression"))
         self.protocolGroupBox.setTitle(_translate("FmTransfer", "Send protocol"))
         self.ggProtocolComboBox.setItemText(0, _translate("FmTransfer", "Normal"))
         self.ggProtocolComboBox.setItemText(1, _translate("FmTransfer", "Fast"))
@@ -293,7 +318,7 @@ class Ui_FmTransfer(object):
         self.dsrRadioButton.setText(_translate("FmTransfer", "DTR"))
         self.rtsRadioButton.setText(_translate("FmTransfer", "RTS"))
         self.checkSignalButton.setText(_translate("FmTransfer", "Check signal"))
-        self.pushButton.setText(_translate("FmTransfer", "Recheck Serial Ports"))
+        self.recheckSerialButton.setText(_translate("FmTransfer", "Recheck Serial Ports"))
         self.chooseSendFileButton.setText(_translate("FmTransfer", "Choose send file"))
         self.sendFileButton.setText(_translate("FmTransfer", "Send file"))
         self.chooseRecvFileButton.setText(_translate("FmTransfer", "Choose recv file"))
@@ -302,4 +327,8 @@ class Ui_FmTransfer(object):
         self.shortMsg.setPlaceholderText(_translate("FmTransfer", "Short message"))
         self.sendMsgButton.setText(_translate("FmTransfer", "Send"))
         self.menuFile.setTitle(_translate("FmTransfer", "File"))
+        self.actionSave_config.setText(_translate("FmTransfer", "Save config"))
+        self.actionLoad_config.setText(_translate("FmTransfer", "Load config"))
+        self.actionClear_log.setText(_translate("FmTransfer", "Clear log"))
+        self.actionShow_signals_in_log.setText(_translate("FmTransfer", "Show signals in log"))
 from led import Led

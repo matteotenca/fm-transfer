@@ -2,31 +2,44 @@ import os
 import re
 import tempfile
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union, List
+from importlib.metadata import version, PackageNotFoundError
 
-import serial.serialutil
-from PyQt6.QtCore import QSettings
-from PyQt6.QtGui import QCloseEvent
-from PyQt6.QtWidgets import QMainWindow, QFileDialog
-from PyQt6.QtSerialPort import QSerialPortInfo
 from PyQt6 import QtCore
-from serial import Serial
+from PyQt6.QtCore import QSettings, QIODeviceBase
+from PyQt6.QtGui import QCloseEvent
+from PyQt6.QtSerialPort import QSerialPortInfo, QSerialPort
+from PyQt6.QtWidgets import QMainWindow, QFileDialog, QStyle
+from quiettransfer import protocols
+
 from .FmWindow import Ui_FmTransfer
 
 
 class FmTransfer(QMainWindow, Ui_FmTransfer):
-
     def __init__(self, **kwargs: Any) -> None:
-        super(FmTransfer, self).__init__(**kwargs)
+        super().__init__(**kwargs)
+
+        self._gg_present = True
+        try:
+            version("gg-transfer")
+        except PackageNotFoundError:
+            self._gg_present = False
+
+        self._show_signals_in_log = False
         self._tool = True
-        self._quiet_protocol_list = ["audible", "audible-7k-channel-0", "audible-7k-channel-1",
-                                     "cable-64k", "ultrasonic",
-                                     "ultrasonic-3600", "ultrasonic-whisper"]
+        self._zlb = False
+        self._quiet_protocol_list = list(protocols)
         self._quiet_protocol = 0
         self._gg_protocol = 2
-        self._logic = True
+        self._logic = False
+        self._qserialports: List[Union[QSerialPortInfo, None]] = [None]
         self.setupUi(FmTransfer=self)  # type: ignore[no-untyped-call]
-        self._serialdevice: Optional[Serial] = None
+        pixmapi = QStyle.StandardPixmap.SP_FileDialogListView
+        style = self.style()
+        if style is not None:
+            icon = style.standardIcon(pixmapi)
+            self.setWindowIcon(icon)
+        self._serialdevice: Optional[QSerialPort] = None
         self._serial = ""
         self._serial_index = 0
         self._serial_closed = True
@@ -41,7 +54,6 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         self._signal_dtr = True  # DSR, True = RTS
         self._send_filename: Optional[str] = None
         self._receive_filename: Optional[str] = None
-        self._ggtransfer = True
         self._process_send = QtCore.QProcess(self)
         self._process_send.readyRead.connect(self._send_data_ready)
         self._process_send.started.connect(self._send_data_started)
@@ -64,14 +76,16 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         self.progressBar.setValue(0)
         self._pieces = 1
         self._current_piece = 0
-        self._protocol = 0
         self._crc32 = ""
         self._tempfile: Optional[int] = None
         self._tempfilename: Optional[str] = None
         self._load_settings()
 
     def closeEvent(self, event: QCloseEvent) -> None:  # type: ignore[override]
-        # settings = QSettings(r"r:\settings.ini", QSettings.Format.IniFormat)
+        self._save_settings()
+        super().closeEvent(event)
+
+    def _save_settings(self) -> None:
         settings = QSettings(QSettings.Format.IniFormat, QSettings.Scope.UserScope, "fm-transfer",
                              "fm-transfer")
         settings.setValue("MainWindow/geometry", self.saveGeometry())
@@ -87,38 +101,49 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         settings.setValue("MainWindow/serial", self._serial)
         settings.setValue("MainWindow/serial_index", self._serial_index)
         settings.setValue("MainWindow/signal_logic", not self._logic)
-        super().closeEvent(event)
+        settings.setValue("MainWindow/zlib", self._zlb)
+        settings.setValue("MainWindow/show_signals", self._show_signals_in_log)
 
     def _load_settings(self) -> None:
-        # settings = QSettings(r"r:\settings.ini", QSettings.Format.IniFormat)
         settings = QSettings(QSettings.Format.IniFormat, QSettings.Scope.UserScope, "fm-transfer",
                              "fm-transfer")
         self.restoreGeometry(settings.value("MainWindow/geometry", self.saveGeometry()))
         self.restoreState(settings.value("MainWindow/state", self.saveState()))
+
+        show_signals = settings.value("MainWindow/show_signals", self._show_signals_in_log, bool)
+        self.actionShow_signals_in_log.setChecked(show_signals)
+        if not self._show_signals_in_log:
+            self.toggle_signals_in_log(show_signals)
+
         send_filename = settings.value("MainWindow/sendfile", None)
         if send_filename is not None:
             self._send_filename = send_filename
             assert self._send_filename is not None
-            short_fname = ('...' + self._send_filename[-20:]) if len(
-                self._send_filename) > 20 else self._send_filename
+            short_fname = ('...' + self._send_filename[-40:]) if len(
+                self._send_filename) > 40 else self._send_filename
             self.sendFileLineEdit.setText(short_fname)
         receive_filename = settings.value("MainWindow/receivefile", None)
         if receive_filename is not None:
             self._receive_filename = receive_filename
             assert self._receive_filename is not None
-            short_fname = ('...' + self._receive_filename[-20:]) if len(
-                self._receive_filename) > 20 else self._receive_filename
+            short_fname = ('...' + self._receive_filename[-40:]) if len(
+                self._receive_filename) > 40 else self._receive_filename
             self.receiveFileLineEdit.setText(short_fname)
 
-        self._tool = settings.value("MainWindow/tool", self._tool, bool)
-        self.quietRadioButton.setChecked(self._tool)
+        self._tool = settings.value("MainWindow/tool", self._tool, bool) if self._gg_present else self._gg_present
+        self.quietRadioButton.setChecked(not self._tool)
         if self._tool:
             self.set_tool(self._tool)
+        if not self._gg_present:
+            self.ggRadioButton.setDisabled(True)
 
         gg_protocol = settings.value("MainWindow/gg_protocol", self._gg_protocol, int)
         self.ggProtocolComboBox.setCurrentIndex(gg_protocol)
         quiet_protocol = settings.value("MainWindow/quiet_protocol", self._quiet_protocol, int)
         self.quietProtocolComboBox.setCurrentIndex(quiet_protocol)
+
+        self._zlb = settings.value("MainWindow/zlib", self._zlb, bool)
+        self.zlibCheckBox.setChecked(self._zlb)
 
         self._logic = settings.value("MainWindow/signal_logic", self._logic, bool)
         self.signalLogic.setChecked(self._logic)
@@ -127,6 +152,7 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         signal = settings.value("MainWindow/signal", self._signal_dtr, bool)
         self._signal_dtr = signal
         self.rtsRadioButton.setChecked(not self._signal_dtr)
+        self.toggle_signal(self._signal_dtr)
 
         serial_name = settings.value("MainWindow/serial", "")
         serial_index = settings.value("MainWindow/serial_index", self._serial_index, int)
@@ -137,6 +163,7 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
     def _disable_interface_elements(self, mode: str) -> None:
 
         self.checkSignalButton.setDisabled(True)
+        self.recheckSerialButton.setDisabled(True)
 
         self.led.setDisabled(True)
 
@@ -165,21 +192,20 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         elif mode == "send_msg":
             self.sendFileButton.setDisabled(True)
             self.receiveButton.setDisabled(True)
-            # self.sendMsgButton.setDisabled(True)
-            self.sendMsgButton.setText("Sending...")
+            self.sendMsgButton.setText("Stop...")
             self.recvMsgButton.setDisabled(True)
         elif mode == "receive_msg":
             self.sendFileButton.setDisabled(True)
             self.receiveButton.setDisabled(True)
             self.sendMsgButton.setDisabled(True)
-            self.recvMsgButton.setText("Receiving...")
-            # self.recvMsgButton.setDisabled(True)
+            self.recvMsgButton.setText("Stop...")
         else:
             raise ValueError(f"Invalid mode: {mode}")
 
     def _enable_interface_elements(self) -> None:
 
-        self.checkSignalButton.setDisabled(self._serial_closed)
+        self.checkSignalButton.setDisabled(not self._show_signals_in_log or self._serial_closed)
+        self.recheckSerialButton.setDisabled(False)
 
         self.led.setDisabled(self._serial_closed)
 
@@ -208,7 +234,6 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
 
     def _send_msg_data_ready(self) -> None:
         new = str(self._process_send_msg.readAll().data(), 'utf-8')
-        # new = re.sub(r"\r", "\n", new)
         for line in new.splitlines():
             if line.startswith("Piece "):
                 match = re.match(r"Piece (\d+)/(\d+)", line)
@@ -229,19 +254,18 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         self._disable_interface_elements("send_msg")
 
     def _send_msg_data_end(self) -> None:
+        self._send_in_progress = False
         if self._tempfilename is not None:
             os.unlink(self._tempfilename)
             self._tempfilename = None
-        self._send_in_progress = False
-        if not self._serial_closed:
-            self.pttReleasedRadioButton.setChecked(True)
         self._enable_interface_elements()
+        if not self._serial_closed and self.pttGroupBox.isEnabled():
+            self.pttReleasedRadioButton.setChecked(True)
 
     def _receive_msg_data_ready(self) -> None:
         new = str(self._process_send_msg.readAll().data(), 'utf-8')
-        # new = re.sub(r"\r", "\n", new)
         for line in new.splitlines():
-            self.messages.insertPlainText(line + "\n")
+            self.messages.insertPlainText("-" + line + "-" + "\n")
             self.messages.ensureCursorVisible()
 
     def _receive_msg_data_started(self) -> None:
@@ -252,17 +276,21 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         self._disable_interface_elements("receive_msg")
 
     def _receive_msg_data_end(self) -> None:
-        if self._tempfilename is not None:
-            if os.path.isfile(self._tempfilename):
-                with open(self._tempfilename, "rb") as f:
-                    self._current_piece = 1
-                    self.progressBar.setValue(self._current_piece)
-                    self.messages.insertPlainText(f.read().decode("utf-8") + "\n")
-                    self.messages.ensureCursorVisible()
-                os.unlink(self._tempfilename)
-            self._tempfilename = None
         self._receive_in_progress = False
         self._enable_interface_elements()
+        if not self._serial_closed:
+            self.pttReleasedRadioButton.setChecked(True)
+        if self._tempfilename is not None:
+            if os.path.isfile(self._tempfilename):
+                with open(self._tempfilename, "r") as f:
+                    self._current_piece = 1
+                    self.progressBar.setValue(self._current_piece)
+                    for line in f.readlines():
+                        # self.messages.insertPlainText("-" + f.read().decode("utf-8") + "-\n")
+                        self.messages.insertPlainText(line + "\n")
+                        self.messages.ensureCursorVisible()
+                os.unlink(self._tempfilename)
+            self._tempfilename = None
 
     def _send_data_ready(self) -> None:
         new = str(self._process_send.readAll().data(), 'utf-8')
@@ -292,6 +320,8 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
                 if match is not None:
                     self._current_piece = int(match.group(1))
                     self.progressBar.setValue(self._current_piece)
+            elif line.startswith("CRC"):
+                self.messages.insertPlainText(line + "\n")
         self.messages.ensureCursorVisible()
 
     def _send_data_started(self) -> None:
@@ -304,7 +334,7 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
     def _send_data_end(self) -> None:
         self._send_in_progress = False
         self._enable_interface_elements()
-        if not self._serial_closed:
+        if not self._serial_closed and self.pttGroupBox.isEnabled():
             self.pttReleasedRadioButton.setChecked(True)
 
     def _receive_data_ready(self) -> None:
@@ -353,44 +383,51 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         self._disable_interface_elements("receive_file")
 
     def _receive_data_end(self) -> None:
-        self._enable_interface_elements()
+        if not self._serial_closed:
+            self.pttReleasedRadioButton.setChecked(True)
         self._receive_in_progress = False
-        # if self.pttGroupBox.isEnabled()
-        # if not self._serial_closed:
-        #     self.pttReleasedRadioButton.setChecked(True)
+        self._enable_interface_elements()
 
     # noinspection PyUnresolvedReferences
     def reinit_serial(self, index: int) -> None:
         self._serial_index = index
-        if self._serialdevice and self._serialdevice.is_open:
+        if self._serialdevice and not self._serial_closed: # and self._serialdevice.is_open:
+            self.pttReleasedRadioButton.setChecked(True)
             self._serialdevice.close()
             self._serialdevice = None
             self._serial_closed = True
-        if self._serial_index == 0:
-            self._serialdevice = None
             self.pttGroupBox.setDisabled(True)
             self.signalGroupBox.setDisabled(True)
             self.checkSignalButton.setDisabled(True)
-            self._serial_closed = True
             self.led.setDisabled(True)
-        else:
+        if self._serial_index != 0:
+            # self._serialdevice = None
+            # self._serial_closed = True
+            # pass
+        # else:
             self._serial = self._com_ports[self._serial_index]
-            self._serialdevice = Serial(baudrate=9600)
-            self._serialdevice.dtr = True
-            self._serialdevice.rts = True
-            self._serialdevice.port = self._serial
+            self._serialdevice = QSerialPort(self._qserialports[index], self)
+            # self._serialdevice = Serial(baudrate=9600)
+            self._serialdevice.setBaudRate(9600)
+            # self._serialdevice.dtr = self._logic
+            # self._serialdevice.rts = self._logic
+            # self._serialdevice.port = self._serial
             try:
-                self._serial_closed = not self._serialdevice.is_open
-                if self._serial_closed:
-                    self._serialdevice.open()
-                    self._serial_closed = False
-                    self.pttGroupBox.setDisabled(False)
-                    self.signalGroupBox.setDisabled(False)
-                    self.led.setDisabled(False)
-                    self.checkSignalButton.setDisabled(False)
-                    self._send_signal()
-                    self.check_signal()
-            except serial.serialutil.SerialException as e:
+                # self._serial_closed = not self._serialdevice.is_open
+                # if self._serial_closed:
+                result = self._serialdevice.open(QIODeviceBase.OpenModeFlag.ReadWrite)
+                if not result:
+                    raise IOError(f"ERROR: {self._serialdevice.portName()}, " + self._serialdevice.errorString())
+                self._serialdevice.setRequestToSend(self._logic)
+                self._serialdevice.setDataTerminalReady(self._logic)
+                self._serial_closed = False
+                self.pttGroupBox.setDisabled(False)
+                self.signalGroupBox.setDisabled(False)
+                self.led.setDisabled(False)
+                self.checkSignalButton.setDisabled(not self._show_signals_in_log or self._serial_closed)
+                self._send_signal()
+                self.check_signal()
+            except IOError as e:
                 self.messages.insertPlainText(str(e) + "\n")
                 self.messages.ensureCursorVisible()
                 self.serialComboBox.setCurrentIndex(0)
@@ -401,32 +438,39 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
 
     # noinspection PyUnresolvedReferences
     def _send_signal(self) -> None:
-        if self._serialdevice and self._serialdevice.is_open:
-            # print("ptt", self._ptt_unpressed)
+        if self._serialdevice and not self._serial_closed:
             if self._ptt_unpressed:
-                self._serialdevice.dtr = self._logic
-                self._serialdevice.rts = self._logic
+                # self._serialdevice.dtr = self._logic
+                # self._serialdevice.rts = self._logic
+                self._serialdevice.setRequestToSend(self._logic)
+                self._serialdevice.setDataTerminalReady(self._logic)
             else:
-                # print("signal", self._signal_dtr)
                 if self._signal_dtr:
-                    self._serialdevice.dtr = not self._logic
-                    self._serialdevice.rts = self._logic
+                    # self._serialdevice.dtr = not self._logic
+                    # self._serialdevice.rts = self._logic
+                    self._serialdevice.setDataTerminalReady(not self._logic)
+                    self._serialdevice.setRequestToSend(self._logic)
                 else:
-                    self._serialdevice.dtr = self._logic
-                    self._serialdevice.rts = not self._logic
+                    # self._serialdevice.dtr = self._logic
+                    # self._serialdevice.rts = not self._logic
+                    self._serialdevice.setDataTerminalReady(self._logic)
+                    self._serialdevice.setRequestToSend(not self._logic)
 
     def check_signal(self) -> None:
-        # noinspection PyUnresolvedReferences
-        if self._serialdevice and self._serialdevice.is_open:
-            if self._serialdevice.dtr:
-                self.messages.insertPlainText("DTR signal DOWN\n")
-            else:
-                self.messages.insertPlainText("DTR signal UP\n")
-            if self._serialdevice.rts:
-                self.messages.insertPlainText("RTS signal DOWN\n")
-            else:
-                self.messages.insertPlainText("RTS signal UP\n")
-        self.messages.ensureCursorVisible()
+        if self._show_signals_in_log:
+            # noinspection PyUnresolvedReferences
+            if self._serialdevice and not self._serial_closed:
+                # if self._serialdevice.dtr:
+                if self._serialdevice.isDataTerminalReady():
+                    self.messages.insertPlainText("DTR signal DOWN\n")
+                else:
+                    self.messages.insertPlainText("DTR signal UP\n")
+                # if self._serialdevice.rts:
+                if self._serialdevice.isRequestToSend():
+                    self.messages.insertPlainText("RTS signal DOWN\n")
+                else:
+                    self.messages.insertPlainText("RTS signal UP\n")
+            self.messages.ensureCursorVisible()
 
     def toggle_ptt(self, checked: bool) -> None:
         # noinspection PyUnresolvedReferences
@@ -444,8 +488,12 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
 
     def recheck_serial_ports(self) -> None:
 
-        if not self._serial_closed and isinstance(self._serialdevice, Serial):
+        if not self._serial_closed and isinstance(self._serialdevice, QSerialPort):
             self.pttReleasedRadioButton.setChecked(True)
+            self.pttGroupBox.setDisabled(True)
+            self.signalGroupBox.setDisabled(True)
+            self.checkSignalButton.setDisabled(True)
+            self.led.setDisabled(True)
             self._serialdevice.close()
             self._serial_closed = True
             self._serial = ""
@@ -454,12 +502,14 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
             self.serialComboBox.currentIndexChanged.disconnect(self.reinit_serial)
         except TypeError:
             pass
+        self._qserialports = [None]
         self.serialComboBox.clear()
         self._com_ports = ["none"]
         self.serialComboBox.addItem("Choose a serial port...")
         available_ports = QSerialPortInfo.availablePorts()
         for port in available_ports:
             self._com_ports.append(port.systemLocation())
+            self._qserialports.append(port)
             self.serialComboBox.addItem(port.systemLocation())
         self.serialComboBox.currentIndexChanged.connect(self.reinit_serial)
 
@@ -468,8 +518,6 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
             if not self._send_filename or not Path(self._send_filename).is_file():
                 self.choose_send_file()
             if self._send_filename is not None and Path(self._send_filename).is_file():
-                if not self._serial_closed and self.pttGroupBox.isEnabled():
-                    self.pttPressedRadioButton.setChecked(True)
                 if self._tool:
                     ex = "gg-transfer"
                     argss = f"send -p {self._gg_protocol} -f -i".split(" ")
@@ -480,16 +528,16 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
                     argss = f"send -p {self._quiet_protocol_list[self._quiet_protocol]} -f -i".split(" ")
                     # noinspection PyTypeChecker
                     argss.append(self._send_filename)
+                    if self._zlb:
+                        argss.append("-z")
                 self._process_send.setProcessChannelMode(
                     QtCore.QProcess.ProcessChannelMode.MergedChannels)
+                if not self._serial_closed and self.pttGroupBox.isEnabled():
+                    self.pttPressedRadioButton.setChecked(True)
                 self._process_send.start(ex, argss)
                 self._send_in_progress = True
         else:
             self._process_send.kill()
-            self._send_in_progress = False
-            self._enable_interface_elements()
-            if not self._serial_closed and self.pttGroupBox.isEnabled():
-                self.pttReleasedRadioButton.setChecked(True)
 
     def receive_file(self) -> None:
         if not self._receive_in_progress:
@@ -507,8 +555,8 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
                              f" -w -o").split(" ")
                     # noinspection PyTypeChecker
                     argss.append(self._receive_filename)
-                # if not self._serial_closed and self.pttGroupBox.isEnabled():
-                #     self.pttPressedRadioButton.setChecked(True)
+                    if self._zlb:
+                        argss.append("-z")
                 self._process_receive.setProcessChannelMode(
                     QtCore.QProcess.ProcessChannelMode.MergedChannels)
                 self._process_receive.start(ex, argss)
@@ -517,8 +565,6 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
             self._process_receive.kill()
             self._receive_in_progress = False
             self._enable_interface_elements()
-            # if not self._serial_closed and self.pttGroupBox.isEnabled():
-            #     self.pttReleasedRadioButton.setChecked(True)
 
     def send_text(self) -> None:
         if not self._send_in_progress:
@@ -527,20 +573,16 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
                 self._tempfile, self._tempfilename = tempfile.mkstemp(text=False)
                 os.write(self._tempfile, msg.encode("utf-8"))
                 os.close(self._tempfile)
-                if not self._serial_closed and self.pttGroupBox.isEnabled():
-                    self.pttPressedRadioButton.setChecked(True)
                 ex = "gg-transfer"
-                argss = f"send -p {self._protocol} -i {self._tempfilename}".split(" ")
+                argss = f"send -p {self._gg_protocol} -i {self._tempfilename}".split(" ")
                 self._process_send_msg.setProcessChannelMode(
                     QtCore.QProcess.ProcessChannelMode.MergedChannels)
+                if not self._serial_closed and self.pttGroupBox.isEnabled():
+                    self.pttPressedRadioButton.setChecked(True)
                 self._process_send_msg.start(ex, argss)
                 self._send_in_progress = True
         else:
             self._process_send_msg.kill()
-            self._send_in_progress = False
-            if not self._serial_closed and self.pttGroupBox.isEnabled():
-                self.pttReleasedRadioButton.setChecked(True)
-            self._enable_interface_elements()
 
     def receive_text(self) -> None:
         if not self._receive_in_progress:
@@ -566,6 +608,7 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
     def set_tool(self, tool: bool) -> None:
         self._tool = tool
         self.ggProtocolComboBox.setDisabled(not self._tool)
+        self.zlibCheckBox.setDisabled(self._tool)
         self.quietProtocolComboBox.setDisabled(self._tool)
 
     def choose_recv_file(self) -> None:
@@ -575,8 +618,8 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         if file_dialog.exec():
             selected_files = file_dialog.selectedFiles()
             self._receive_filename = selected_files[0]
-            short_fname = ('...' + self._receive_filename[-20:]) if len(
-                self._receive_filename) > 20 else self._receive_filename
+            short_fname = ('...' + self._receive_filename[-40:]) if len(
+                self._receive_filename) > 40 else self._receive_filename
             self.receiveFileLineEdit.setText(short_fname)
 
     def choose_send_file(self) -> None:
@@ -585,11 +628,27 @@ class FmTransfer(QMainWindow, Ui_FmTransfer):
         if file_dialog.exec():
             selected_files = file_dialog.selectedFiles()
             self._send_filename = selected_files[0]
-            short_fname = ('...' + self._send_filename[-20:]) if len(
-                self._send_filename) > 20 else self._send_filename
+            short_fname = ('...' + self._send_filename[-40:]) if len(
+                self._send_filename) > 40 else self._send_filename
             self.sendFileLineEdit.setText(short_fname)
 
     def set_signal_logic(self, logic: bool) -> None:
         self._logic = not logic
         self._send_signal()
         self.check_signal()
+
+    def set_compression(self, compression: bool) -> None:
+        self._zlb = compression
+
+    def save_config(self) -> None:
+        self._save_settings()
+
+    def load_config(self) -> None:
+        self._load_settings()
+
+    def clear_log(self) -> None:
+        self.messages.clear()
+
+    def toggle_signals_in_log(self, signals_in_log: bool) -> None:
+        self._show_signals_in_log = signals_in_log
+        self.checkSignalButton.setDisabled(not self._show_signals_in_log or self._serial_closed)

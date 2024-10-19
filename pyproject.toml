@@ -21,7 +21,11 @@ classifiers = [
     "Topic :: Communications",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
-dependencies = ["pyqt6", "pyserial", "gg-transfer==0.2.6", "quiet-transfer==0.2.6"]
+dependencies = ["pyqt6", "quiet-transfer>=0.2.7"]
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+ggwave = ["gg-transfer>=0.2.7"]
 
 [project.scripts]
 fm-transfer = "fmtransfer.__main__:_main"

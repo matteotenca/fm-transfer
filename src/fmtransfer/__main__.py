@@ -1,4 +1,6 @@
 import sys
+from typing import Optional
+
 from PyQt6.QtWidgets import QApplication, QStyle, QStyleFactory
 import fmtransfer
 # import importlib.metadata
@@ -6,8 +8,8 @@ import fmtransfer
 
 def _main() -> None:
     app = QApplication(sys.argv)
-    style: QStyle = app.style()
-    if style.name() == "windows11":
+    style: Optional[QStyle] = app.style()
+    if style is not None and style.name() == "windows11":
         app.setStyle(QStyleFactory.create('Fusion'))
     fm_transfer = fmtransfer.FmTransfer()
     fm_transfer.show()

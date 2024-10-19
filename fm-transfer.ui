@@ -34,9 +34,6 @@
   <property name="windowTitle">
    <string>FM-Transfer</string>
   </property>
-  <property name="windowIcon">
-   <iconset theme="QIcon::ThemeIcon::MediaSeekForward"/>
-  </property>
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
@@ -133,6 +130,13 @@
           <widget class="QRadioButton" name="quietRadioButton">
            <property name="text">
             <string>quiet-lib</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="zlibCheckBox">
+           <property name="text">
+            <string>zlib compression</string>
            </property>
           </widget>
          </item>
@@ -305,8 +309,14 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::ContextMenuPolicy::ActionsContextMenu</enum>
+      </property>
       <property name="acceptDrops">
        <bool>false</bool>
+      </property>
+      <property name="documentTitle">
+       <string notr="true"/>
       </property>
       <property name="undoRedoEnabled">
        <bool>false</bool>
@@ -317,8 +327,14 @@
       <property name="readOnly">
        <bool>true</bool>
       </property>
+      <property name="plainText">
+       <string notr="true"/>
+      </property>
       <property name="centerOnScroll">
        <bool>false</bool>
+      </property>
+      <property name="placeholderText">
+       <string notr="true"/>
       </property>
      </widget>
     </item>
@@ -381,7 +397,7 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="recheckSerialButton">
         <property name="text">
          <string>Recheck Serial Ports</string>
         </property>
@@ -530,10 +546,38 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionSave_config"/>
+    <addaction name="actionLoad_config"/>
+    <addaction name="separator"/>
+    <addaction name="actionClear_log"/>
+    <addaction name="actionShow_signals_in_log"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionSave_config">
+   <property name="text">
+    <string>Save config</string>
+   </property>
+  </action>
+  <action name="actionLoad_config">
+   <property name="text">
+    <string>Load config</string>
+   </property>
+  </action>
+  <action name="actionClear_log">
+   <property name="text">
+    <string>Clear log</string>
+   </property>
+  </action>
+  <action name="actionShow_signals_in_log">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Show signals in log</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -717,7 +761,7 @@
    <slot>toggle_ptt(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>129</x>
+     <x>114</x>
      <y>150</y>
     </hint>
     <hint type="destinationlabel">
@@ -759,7 +803,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
+   <sender>recheckSerialButton</sender>
    <signal>clicked()</signal>
    <receiver>FmTransfer</receiver>
    <slot>recheck_serial_ports()</slot>
@@ -790,6 +834,86 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>zlibCheckBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>set_compression(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>145</x>
+     <y>190</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>149</x>
+     <y>246</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSave_config</sender>
+   <signal>triggered()</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>save_config()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>365</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionLoad_config</sender>
+   <signal>triggered()</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>load_config()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>365</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionClear_log</sender>
+   <signal>triggered()</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>clear_log()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>365</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionShow_signals_in_log</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>FmTransfer</receiver>
+   <slot>toggle_signals_in_log(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>365</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>toggle_ptt(bool)</slot>
@@ -807,5 +931,10 @@
   <slot>set_tool(bool)</slot>
   <slot>recheck_serial_ports()</slot>
   <slot>set_signal_logic(bool)</slot>
+  <slot>set_compression(bool)</slot>
+  <slot>save_config()</slot>
+  <slot>load_config()</slot>
+  <slot>clear_log()</slot>
+  <slot>toggle_signals_in_log(bool)</slot>
  </slots>
 </ui>
